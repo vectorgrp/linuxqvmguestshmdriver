@@ -187,7 +187,7 @@ This component builds a Linux kernel module (qvm_shm.ko) via kbuild. It is best 
 ```shell
     make -C *Path to kernel header* \
         M=$(pwd)/build/kbuild \
-        src=$(pwd)/ves-linuxqvmguestshmdriver \
+        src=$(pwd)/qvm-shm \
         W=1 \
         modules
 ```
@@ -197,6 +197,6 @@ This component builds a Linux kernel module (qvm_shm.ko) via kbuild. It is best 
 ```shell
     make -C *Path to kernel header* \
         M=$(pwd)/build/kbuild \
-        src=$(pwd)/ves-linuxqvmguestshmdriver \
+        src=$(pwd)/qvm-shm \
         clean
 ```
