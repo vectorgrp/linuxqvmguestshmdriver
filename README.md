@@ -203,4 +203,6 @@ This component builds a Linux kernel module (qvm_shm.ko) via kbuild. It is best 
 
 ## Contact
 
-Vector Software Platform: `support [at] vector.com`
+Vector Informatik GmbH
+
+`support [at] vector.com`
