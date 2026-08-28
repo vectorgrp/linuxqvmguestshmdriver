@@ -1,22 +1,22 @@
-# VES Linux/Android Guest Shared Memory Driver for QNX Hypervisor
+# Linux/Android Guest Shared Memory Driver for QNX Hypervisor
 
-A Linux kernel module that enables guest VMs to access shared memory regions via the QNX vdev SHMEM to exchange data with applications in other VMs or the host.
+A Linux kernel module that enables guest VMs to access shared memory regions via the QNX vdev shmem to exchange data with applications in other VMs or the host.
 
 ## Features
 
-- **vdev Access**: Binds to vdev SHMEM via PCI or MMIO.
+- **vdev Access**: Binds to vdev shmem via PCI or MMIO.
 - **Flexible region modes**: Supports multi-peer (with/without notifications) and two-peer shared memory regions
 - **User-space accessible**: Shared memory regions are mmap-able into user-space applications
 - **Interrupt handling**: Supports shared IRQ notifications for peer synchronization
 
-## vdev SHMEM Access
+## vdev shmem Access
 
 | Mode | Discovery |
 |-----------|-----------|
 | **PCI** | Vendor/Device ID lookup |
 | **MMIO** | Device Tree / ACPI |
 
-To use the MMIO mode, the parameter mmio_addr=0xXXXXXXXX" must be used when loading the kernel module. The address must match the configuration of the vdev in the qvm config file. Example qvmconfig entry for the vdem SHMEM
+To use the MMIO mode, the parameter mmio_addr=0xXXXXXXXX" must be used when loading the kernel module. The address must match the configuration of the vdev in the qvm config file. Example qvmconfig entry for the vdem shmem
 
 ```C
 vdev vdev-shmem.so loc 0xC1000000 intr gic:17
@@ -56,7 +56,7 @@ DefinitionBlock ("qvm_guest_shm.ssdt.aml", "SSDT", 2, "QNXQVM", "qvm_dsdt", 0x00
 }
 ```
 
-The address (e.g. 0xC1000000) and the Interrupt id (e.g. 17) must match the configuration of the vdev SHMEM in the qvmconfig file.
+The address (e.g. 0xC1000000) and the Interrupt id (e.g. 17) must match the configuration of the vdev shmem in the qvmconfig file.
 
 ## Usage
 
@@ -172,7 +172,7 @@ This component builds a Linux kernel module (qvm_shm.ko) via kbuild. It is best 
 ### Kernel build tree / headers
 
 - You must provide a Linux kernel build tree. Currently supported kernel version: 6.1.118. Linux kernel headers are platform-specific. 
-- QNX guest header for using the vdev SHMEM: "quest_shm.h"
+- QNX guest header for using the vdev shmem: "quest_shm.h"
 
 ## Build with make/kbuild
 
@@ -200,3 +200,7 @@ This component builds a Linux kernel module (qvm_shm.ko) via kbuild. It is best 
         src=$(pwd)/qvm-shm \
         clean
 ```
+
+## Contact
+
+Vector Software Platform: `support [at] vector.com`
