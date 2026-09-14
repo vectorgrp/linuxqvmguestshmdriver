@@ -9,7 +9,6 @@ struct ves_qvm_shm_file_ctx;
 struct ves_qvm_shm_region;
 
 int ves_qvm_shm_notify_attach(struct ves_qvm_shm_file_ctx *fctx);
-void ves_qvm_shm_notify_detach(struct ves_qvm_shm_file_ctx *fctx);
 void ves_qvm_shm_notify_region_put(struct ves_qvm_shm_region *region);
 
 #endif /* QVM_SHM_FOPS_NOTIFY_H */

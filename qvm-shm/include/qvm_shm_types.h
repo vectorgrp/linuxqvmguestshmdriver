@@ -37,6 +37,47 @@ struct ves_qvm_shm_region {
 	u32 mapped_pages;
 	u8 client_id;
 
+	/*
+	 * Backend IRQ line, owned by the region.
+	 *
+	 * The region registers its own handler (dev_id == region) as soon as it
+	 * is attached and frees it in the last put. Handler lifetime therefore
+	 * tracks the hypervisor attachment, not the file that created it: a
+	 * region can outlive every file that opened it, because an mmap alone
+	 * holds a reference.
+	 */
+	int irq;
+
+	/*
+	 * Notification state, owned by the region rather than by whoever opened
+	 * it. The region is the only reader of its control page, and for the
+	 * NOTIFY types it is never shared between files, so this is also the
+	 * per-consumer state. It has to live here and not in the file context:
+	 * the region outlives that context whenever an mmap still holds a
+	 * reference, and the IRQ handler must stay serviceable for exactly as
+	 * long as the region is attached.
+	 *
+	 * NO_NOTIFY regions only ever maintain notifications.active_ids - they
+	 * surface nothing to userspace and read status purely to acknowledge.
+	 *
+	 * notifications.active_ids doubles as the connect/disconnect edge
+	 * detection baseline, which is why read() must not clear it: unlike the
+	 * other two members it is current state, not an event accumulated since
+	 * the last read.
+	 */
+	struct ves_qvm_shm_read_notify notifications;
+	atomic_t irq_pending;
+	wait_queue_head_t wq;
+
+	/*
+	 * Protects notifications. Taken with spin_lock() from hard IRQ and
+	 * spin_lock_irqsave() from process context.
+	 *
+	 * irq_pending and wq need no protection: the first is atomic, the second
+	 * brings its own lock, and both are only ever touched outside this one.
+	 */
+	spinlock_t notify_lock;
+
 	struct list_head list_entry;
 
 	/*
@@ -65,13 +106,6 @@ struct ves_qvm_shm_file_ctx {
 	char shm_region_name[VES_QVM_SHM_NAME_MAX];
 	enum ves_qvm_shm_type type;
 	u32 requested_pages;
-
-	struct ves_qvm_shm_read_notify notifications;
-	spinlock_t notify_lock;
-
-	int irq;
-	atomic_t irq_pending;
-	wait_queue_head_t wq;
 
 	/* Active SHM region attachment */
 	struct ves_qvm_shm_region *region;

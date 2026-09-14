@@ -14,12 +14,21 @@
  * PCI Compatibility - managed resources
  * =============================================================================
  *
- * pcim_iomap_region() was added in Linux 6.12.0. For older kernels, provide a
- * compatibility wrapper that replicates the behavior, especially regarding
- * error handling.
+ * pcim_iomap_region() was added in Linux 6.12.0. For older kernels, provide a compatibility wrapper
+ * that replicates the behavior, especially regarding error handling.
+ *
+ * In the KMI symbol list of AOSP pcim_iomap_region() is only exported since version 6.18. Further,
+ * neither pci_request_region() nor pcim_iomap() are exported there, so we have to fall back to the
+ * deprecated functions pcim_iomap_regions() and pcim_iomap_table().
  */
 
-#if LINUX_VERSION_CODE < KERNEL_VERSION(6, 12, 0)
+#ifdef __ANDROID_COMMON_KERNEL__
+#define QVM_SHM_PCIM_IOMAP_REGION_VERSION KERNEL_VERSION(6, 18, 0)
+#else
+#define QVM_SHM_PCIM_IOMAP_REGION_VERSION KERNEL_VERSION(6, 12, 0)
+#endif
+
+#if LINUX_VERSION_CODE < QVM_SHM_PCIM_IOMAP_REGION_VERSION
 static inline void __iomem *pcim_iomap_region_compat(struct pci_dev *pdev, int bar,
 						     const char *name)
 {
@@ -27,15 +36,24 @@ static inline void __iomem *pcim_iomap_region_compat(struct pci_dev *pdev, int b
 	int ret;
 
 	/*
-	 * pdev is managed (see pcim_enable_device()), so pci_request_region() above already
-	 * registered this region for automatic release via pcim_release()'s region_mask
+	 * pdev is managed (see pcim_enable_device()), so the region request below already
+	 * registers this region for automatic release via pcim_release()'s region_mask
 	 * tracking. No explicit devres action needed here.
 	 */
+
+#ifdef __ANDROID_COMMON_KERNEL__
+	ret = pcim_iomap_regions(pdev, BIT(bar), name);
+	if (ret)
+		return IOMEM_ERR_PTR(ret);
+
+	addr = pcim_iomap_table(pdev)[bar];
+#else
 	ret = pci_request_region(pdev, bar, name);
 	if (ret)
 		return IOMEM_ERR_PTR(ret);
 
 	addr = pcim_iomap(pdev, bar, 0);
+#endif
 	if (!addr)
 		return IOMEM_ERR_PTR(-ENOMEM);
 

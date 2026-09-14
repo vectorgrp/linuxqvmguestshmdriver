@@ -18,7 +18,7 @@
 #undef pr_fmt
 #define pr_fmt(fmt) VES_QVM_SHM_DRIVER_NAME ": " fmt
 
-static void ves_qvm_shm_common_region_put(struct ves_qvm_shm_region *region)
+void ves_qvm_shm_common_region_put(struct ves_qvm_shm_region *region)
 {
 	if (region->type == VES_QVM_SHM_NO_NOTIFY_MANY)
 		ves_qvm_shm_no_notify_region_put(region);

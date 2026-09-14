@@ -45,13 +45,8 @@ struct ves_qvm_shm_file_ctx *ves_qvm_shm_file_alloc(const char *name, enum ves_q
 		return NULL;
 	}
 
-	fctx->irq	      = -1;
 	fctx->type	      = type;
 	fctx->requested_pages = pages;
-
-	atomic_set(&fctx->irq_pending, 0);
-	init_waitqueue_head(&fctx->wq);
-	spin_lock_init(&fctx->notify_lock);
 
 	return fctx;
 }

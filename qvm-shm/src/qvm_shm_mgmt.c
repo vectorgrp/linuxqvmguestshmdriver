@@ -13,6 +13,7 @@
 #include <linux/uaccess.h>
 
 #include "qvm_shm_file.h"
+#include "qvm_shm_fops_common.h"
 #include "qvm_shm_fops_nonotify.h"
 #include "qvm_shm_fops_notify.h"
 
@@ -85,10 +86,7 @@ static long ves_qvm_shm_mgmt_create(enum ves_qvm_shm_type type,
 	return fd;
 
 detach_shm_file:
-	if (type == VES_QVM_SHM_NO_NOTIFY_MANY)
-		ves_qvm_shm_no_notify_detach(fctx);
-	else
-		ves_qvm_shm_notify_detach(fctx);
+	ves_qvm_shm_common_region_put(fctx->region);
 
 free_shm_file:
 	kfree(fctx);
