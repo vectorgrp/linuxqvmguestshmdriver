@@ -16,8 +16,8 @@ A Linux kernel module that enables guest VMs to access shared memory regions via
 | **PCI** | Vendor/Device ID lookup |
 | **MMIO** | Device Tree / ACPI |
 
-[!CAUTION]
-The kernel module requires an exclusive interrupt line that is not used by any other device. This must be considered during the integration.
+> [!CAUTION]
+> The kernel module requires an exclusive interrupt line that is not used by any other device. This must be considered during the integration.
 
 ### PCI
 The vdev shmem must be added to the guest VM qvmconfig file:
