@@ -9,21 +9,33 @@ A Linux kernel module that enables guest VMs to access shared memory regions via
 - **User-space accessible**: Shared memory regions are mmap-able into user-space applications
 - **Interrupt handling**: Supports shared IRQ notifications for peer synchronization
 
-## vdev shmem Access
+## Guest VM Configuration
 
 | Mode | Discovery |
 |-----------|-----------|
 | **PCI** | Vendor/Device ID lookup |
 | **MMIO** | Device Tree / ACPI |
 
-To use the MMIO mode, the parameter mmio_addr=0xXXXXXXXX" must be used when loading the kernel module. The address must match the configuration of the vdev in the qvm config file. Example qvmconfig entry for the vdem shmem
+[!CAUTION]
+The kernel module requires an exclusive interrupt line that is not used by any other device. This must be considered during the integration.
+
+### PCI
+The vdev shmem must be added to the guest VM qvmconfig file:
+
+```C
+vdev vdev-shmem.so
+```
+
+### MMIO
+The vdev shmem must be added to the guest VM qvmconfig file:
 
 ```C
 vdev vdev-shmem.so loc 0xC1000000 intr gic:17
 ```
 
-### MMIO x68
-For x68 platform, the MMIO is using ACPI. For this the follwoing entry must be added to the ACPI table:
+To use the MMIO mode, the address for the factory page and the interrupt must be added to the vdev configuration.
+
+For x86 platform, the MMIO is using ACPI. For this the following entry must be added to the ACPI table:
 
 ```C
 DefinitionBlock ("qvm_guest_shm.ssdt.aml", "SSDT", 2, "QNXQVM", "qvm_dsdt", 0x00000001)
@@ -67,6 +79,10 @@ Load the kernel module for MMIO mode:
 "insmod ./qvm_shm.ko mmio_addr=0xC1000000"
 ```
 
+The parameter mmio_addr=0xXXXXXXXX" must match the address configuration of the vdev in the qvmconfig file.
+
+For PCI mode, the kernel module can be loaded without specifying the MMIO address.
+
 ### Runtime access
 The kernel module (`qvm_shm.ko`) exports a management character device (`/dev/ves_qvm_shm`) for creating and managing shared memory regions via ioctl.
 
@@ -107,6 +123,7 @@ Called on the returned file descriptor from a CREATE ioctl.
 - **Returns**: 0 on success; negative errno on error.
 
 #### Example Workflow
+The following listing shows an example on how to create a shared memory region and interact with it to read/write memory and send/receive notifications.
 
 ```c
 // Open management device
